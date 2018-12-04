@@ -10,78 +10,83 @@ namespace ConsoleRSA
         static void Main(string[] args)
         {
             bool continueLoop = true;
-
+            var originalConsoleTextColor = Console.ForegroundColor;
             int p, q;
-
-            do
-            {
-                Console.WriteLine("Write P:");
-                int.TryParse(Console.ReadLine(), out p);
-            } while (!IsPrime(p));
-
-            do
-            {
-                Console.WriteLine("Write Q:");
-                int.TryParse(Console.ReadLine(), out q);
-            } while (!IsPrime(q));
-
 
             while (continueLoop)
             {
-                Console.Write("Write your message: ");
-                string message = Console.ReadLine();
-                byte[] messageBytes = Encoding.UTF8.GetBytes(message);
-
-                foreach (var b in messageBytes)
+                do
                 {
-                    BigInteger msgInInteger = new BigInteger(b);
+                    Console.Write("Input P - must be prime number: ");
+                    int.TryParse(Console.ReadLine(), out p);
+                    Console.WriteLine();
+                } while (!IsPrime(p));
 
-                    var res = PerformRsa(msgInInteger, p, q);
+                do
+                {
+                    Console.Write("Input Q - must be prime number and different from P: ");
+                    int.TryParse(Console.ReadLine(), out q);
+                    Console.WriteLine();
+                } while (!IsPrime(q) || q == p);
 
-                    byte[] backBytes = res.msgBack.ToByteArray();
-                    string backMessage = Encoding.UTF8.GetString(backBytes);
+                var generator = new RsaKeyGenerator(new BigInteger(p), new BigInteger(q));
 
-                    //Console.WriteLine(messageBytes);
-                    Console.WriteLine(msgInInteger);
-                    //Console.WriteLine(backBytes);
-                    Console.WriteLine(backMessage);
+                var (publicKey, privateKey) = generator.GenerateKeys();
+
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"Public Key: {publicKey.ToString()}");
+                Console.WriteLine($"Private Key: {privateKey.ToString()}\n");
+                Console.ForegroundColor = originalConsoleTextColor;
+
+                Console.Write("Write your message: ");
+                string message = Console.ReadLine(),
+                    decryptedMessage = "",
+                    fullCiphertext = "";
+
+                foreach (var letter in message)
+                {
+                    Console.WriteLine($"Letter: {letter}");
+                    var bytes = Encoding.UTF8.GetBytes(letter.ToString());
+                    BigInteger msgInInteger = new BigInteger(bytes);
+
+                    var res = PerformRsa(msgInInteger, publicKey, privateKey);
+
+                    byte[] decryptedBytes = res.decryptedText.ToByteArray();
+                    string decryptedLetter = Encoding.UTF8.GetString(decryptedBytes);
+
+                    decryptedMessage += decryptedLetter;
+                    fullCiphertext += res.ciphertext.ToString();
+
+                    Console.WriteLine($"Ciphertext: {res.ciphertext}");
+                    Console.WriteLine($"Decrypted letter: {decryptedLetter}\n");
                 }
-
-                Console.WriteLine("Continue (Y/N)?");
+                
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.WriteLine($"Full ciphertext: {fullCiphertext}");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"Decrypted message: {decryptedMessage}");
+                Console.ForegroundColor = originalConsoleTextColor;
+                Console.Write("\nContinue (Y/N)? ");
                 continueLoop = Console.ReadKey().Key != ConsoleKey.N;
 
-                Console.WriteLine($"\n\n{new string('=', 100)}\n");
+                Console.WriteLine($"\n\n{new string('=', 100)}");
             }
 
-            //PerformRsa(20);
-            //Console.ReadKey();
+            Console.WriteLine("Press any key to end the program...");
+            Console.ReadKey();
         }
         
-        public static (BigInteger ciphertext, BigInteger msgBack) PerformRsa(BigInteger msg, int _p, int _q)
+        public static (BigInteger ciphertext, BigInteger decryptedText) 
+            PerformRsa(BigInteger msg, PublicKey publicKey, PrivateKey privateKey)
         {
-            BigInteger
-                p = new BigInteger(_p),
-                q = new BigInteger(_q);
-            var generator = new RsaKeyGenerator(p, q);
-
-            var (publicKey, privateKey) = generator.GenerateKeys();
-
-            Console.WriteLine($"Public Key: {publicKey.ToString()}");
-            Console.WriteLine($"Private Key: {privateKey.ToString()}");
-
             // c = m^e % n
             BigInteger ciphertext = BigInteger.Pow(msg, (int)publicKey.E);
             ciphertext %= publicKey.N;
             // m = c^d % n
-            BigInteger msgBack = BigInteger.Pow(ciphertext, (int)privateKey.D);
-            msgBack %= privateKey.N;
+            BigInteger decryptedText = BigInteger.Pow(ciphertext, (int)privateKey.D);
+            decryptedText %= privateKey.N;
 
-
-            Console.WriteLine($"Message: {msg}");
-            Console.WriteLine($"Ciphertext: {ciphertext}");
-            Console.WriteLine($"Message back: {msgBack}");
-
-            return (ciphertext, msgBack);
+            return (ciphertext, decryptedText);
         }
 
         public static bool IsPrime(int number)
