@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Numerics;
+using System.Linq;
 
 namespace ConsoleRSA
 {
@@ -8,60 +9,24 @@ namespace ConsoleRSA
     {
         static void Main(string[] args)
         {
-            //double
-            //    p = 3, 
-            //    q = 7;
+            bool continueLoop = true;
 
-            //double n = p * q; // modulus for public key and the private keys
+            int p, q;
 
-            //// length of common factors (totient)
-            //double phi = (q - 1) * (p - 1);
+            do
+            {
+                Console.WriteLine("Write P:");
+                int.TryParse(Console.ReadLine(), out p);
+            } while (!IsPrime(p));
 
-            //// for encryption key:
-            //// it has to be between <1;l>, and coprime
+            do
+            {
+                Console.WriteLine("Write Q:");
+                int.TryParse(Console.ReadLine(), out q);
+            } while (!IsPrime(q));
 
-            //// find coprime
-            //double e = 2;
-            //while (e < phi)
-            //{
-            //    if (Gcd((int)e, (int)phi) == 1)
-            //        break;
-            //    else
-            //        ++e;
-            //}
-            //Console.WriteLine($"Coprime: {e}");
 
-            //// compute d to satisfy the congruence relation
-            //// d = (1+ k * totient) / coprime | for some integer k
-            //int k = 2;
-            //double d = (1 + (k * phi)) / e;
-
-            //Console.WriteLine($"1+{k}*{phi}/{e}={d}");
-
-            //Console.WriteLine($"Public key: (n={n}, e={e})");
-            //Console.WriteLine($"Private key: (n={n}, d={d})");
-            // The public key is made of the modulus n
-            // and the public (or encryption) exponent e. 
-            // The private key is made of the modulus n
-            // and the private (or decryption) exponent d
-            // which must be kept secret.
-
-            // encrypting
-            // message M to a number m smaller than n
-            // c = m^e % n
-
-            // decrypting
-            // m = c^d % n
-
-            //double msg = 20;
-            //double c = Math.Pow(msg, e) % n;
-            //Console.WriteLine($"Encrypted data: {c}");
-
-            //double m = Math.Pow(c, d) % n;
-            //Console.WriteLine($"Decrypted data: {m}");
-            bool продолжать = true;
-
-            while (продолжать)
+            while (continueLoop)
             {
                 Console.Write("Write your message: ");
                 string message = Console.ReadLine();
@@ -71,7 +36,7 @@ namespace ConsoleRSA
                 {
                     BigInteger msgInInteger = new BigInteger(b);
 
-                    var res = Test1(msgInInteger);
+                    var res = PerformRsa(msgInInteger, p, q);
 
                     byte[] backBytes = res.msgBack.ToByteArray();
                     string backMessage = Encoding.UTF8.GetString(backBytes);
@@ -83,20 +48,20 @@ namespace ConsoleRSA
                 }
 
                 Console.WriteLine("Continue (Y/N)?");
-                продолжать = Console.ReadKey().Key != ConsoleKey.N;
+                continueLoop = Console.ReadKey().Key != ConsoleKey.N;
 
                 Console.WriteLine($"\n\n{new string('=', 100)}\n");
             }
 
-            //Test1(20);
+            //PerformRsa(20);
             //Console.ReadKey();
         }
         
-        public static (BigInteger ciphertext, BigInteger msgBack) Test1(BigInteger msg)
+        public static (BigInteger ciphertext, BigInteger msgBack) PerformRsa(BigInteger msg, int _p, int _q)
         {
             BigInteger
-                p = 17,
-                q = 53;
+                p = new BigInteger(_p),
+                q = new BigInteger(_q);
             var generator = new RsaKeyGenerator(p, q);
 
             var (publicKey, privateKey) = generator.GenerateKeys();
@@ -113,10 +78,25 @@ namespace ConsoleRSA
 
 
             Console.WriteLine($"Message: {msg}");
-            Console.WriteLine($"Ciphertext: {ciphertext}, {Encoding.UTF8.GetString(ciphertext.ToByteArray())}");
+            Console.WriteLine($"Ciphertext: {ciphertext}");
             Console.WriteLine($"Message back: {msgBack}");
 
             return (ciphertext, msgBack);
+        }
+
+        public static bool IsPrime(int number)
+        {
+            if (number <= 1) return false;
+            if (number == 2) return true;
+            if (number % 2 == 0) return false;
+
+            var boundary = (int)Math.Floor(Math.Sqrt(number));
+
+            for (int i = 3; i <= boundary; i += 2)
+                if (number % i == 0)
+                    return false;
+
+            return true;
         }
 
         //public static bool AreCoprime(BigInteger x, BigInteger y)
