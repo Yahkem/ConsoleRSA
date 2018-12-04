@@ -66,6 +66,7 @@ namespace ConsoleRSA
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"Decrypted message: {decryptedMessage}");
                 Console.ForegroundColor = originalConsoleTextColor;
+
                 Console.Write("\nContinue (Y/N)? ");
                 continueLoop = Console.ReadKey().Key != ConsoleKey.N;
 
@@ -103,67 +104,5 @@ namespace ConsoleRSA
 
             return true;
         }
-
-        //public static bool AreCoprime(BigInteger x, BigInteger y)
-        //{
-        //    while (x != 0 && y != 0)
-        //    {
-        //        if (x > y)
-        //            x %= y;
-        //        else
-        //            y %= x;
-        //    }
-
-        //    BigInteger gcd = x > y ? x : y;
-        //    //BigInteger gcd = GreatestCommonDivisor(x, y);// x > y ? x : y;
-
-        //    return gcd == 1;
-        //}
-
-        //public static int Gcd(int a, int b)
-        //{
-        //    int tmp;
-
-        //    while(true)
-        //    {
-        //        tmp = a % b;
-        //        if (tmp == 0)
-        //            return b;
-
-        //        a = b;
-        //        b = tmp;
-        //    }
-        //}
-
-        //public static BigInteger GreatestCommonDivisor(BigInteger m, BigInteger n)
-        //{
-        //    BigInteger tmp = 0;
-
-        //    if (m < n)
-        //    {
-        //        tmp = m;
-        //        m = n;
-        //        n = tmp;
-        //    }
-
-        //    while (n != 0)
-        //    {
-        //        tmp = m % n;
-        //        m = n;
-        //        n = tmp;
-        //    }
-
-        //    return m;
-        //}
-
-        //public static (BigInteger m2, BigInteger n2) 
-        //    Reduce(BigInteger m, BigInteger n)
-        //{
-        //    var gcd = GreatestCommonDivisor(m, n);
-        //    m /= gcd;
-        //    n /= gcd;
-
-        //    return (m, n);
-        //}
     }
 }

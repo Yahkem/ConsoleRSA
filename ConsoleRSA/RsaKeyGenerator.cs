@@ -70,18 +70,5 @@ namespace ConsoleRSA
                 ++d;
             }
         }
-
-        //private BigInteger GreatestCommonDivisor(BigInteger a, BigInteger b)
-        //{
-        //    while (a != 0 && b != 0)
-        //    {
-        //        if (a > b)
-        //            a %= b;
-        //        else
-        //            b %= a;
-        //    }
-
-        //    return a == 0 ? b : a;
-        //}
     }
 }
